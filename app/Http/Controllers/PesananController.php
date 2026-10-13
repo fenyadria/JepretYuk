@@ -110,7 +110,7 @@ class PesananController extends Controller
                 'status' => $request->status,
             ]);
 
-            return redirect()->route('pesanan.index')->with('success', 'Status pesanan berhasil diperbarui.');
+            return redirect()->route('fotografer.pesanan.index')->with('success', 'Status pesanan berhasil diperbarui.');
         } else {
             // Klien mengubah detail pesanan (hanya jika masih menunggu)
             if ($pesanan->klien_id !== $user->id) {

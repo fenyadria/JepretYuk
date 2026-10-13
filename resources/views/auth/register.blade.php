@@ -42,28 +42,6 @@
                        placeholder="Ulangi password" required>
             </div>
 
-            <div class="form-group">
-                <label>Daftar sebagai</label>
-                <div class="role-options">
-                    <div class="role-option">
-                        <input type="radio" name="role" id="role_klien" value="klien"
-                               {{ old('role', 'klien') === 'klien' ? 'checked' : '' }}>
-                        <label for="role_klien">
-                            <span class="role-icon">👤</span>
-                            <span class="role-label">Klien</span>
-                        </label>
-                    </div>
-                    <div class="role-option">
-                        <input type="radio" name="role" id="role_fotografer" value="fotografer"
-                               {{ old('role') === 'fotografer' ? 'checked' : '' }}>
-                        <label for="role_fotografer">
-                            <span class="role-icon">📷</span>
-                            <span class="role-label">Fotografer</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
             <button type="submit" class="btn btn-accent" style="width:100%">Daftar</button>
         </form>
 

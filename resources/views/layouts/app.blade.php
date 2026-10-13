@@ -52,12 +52,5 @@
 
         @yield('content')
     </main>
-
-    {{-- Footer --}}
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; {{ date('Y') }} JepretYuk &mdash; Sistem Pesan Fotografer</p>
-        </div>
-    </footer>
 </body>
 </html>

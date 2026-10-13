@@ -34,7 +34,7 @@
 
         @if($isAdmin)
             {{-- Fotografer: hanya ubah status --}}
-            <form method="POST" action="{{ route('fotografer.pesanan.update', $pesanan) }}">
+            <form method="POST" action="{{ route('fotografer.pesanan.update', $pesanan->id) }}">
                 @csrf
                 @method('PUT')
 

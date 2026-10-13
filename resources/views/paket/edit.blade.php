@@ -46,11 +46,15 @@
                         <p class="form-hint">Foto saat ini. Upload foto baru untuk mengganti.</p>
                     </div>
                 @endif
-                <label class="form-file-label" style="margin-top: 8px;">
+                <label class="form-file-label" for="foto" style="cursor: pointer; display: block; border: 2px dashed #ccc; padding: 15px; border-radius: 6px; text-align: center;">
                     <span>📎</span>
-                    <span>Pilih foto baru (opsional)</span>
-                    <input type="file" name="foto" accept="image/jpeg,image/png,image/jpg">
+                    <span id="file-label-text">Pilih foto baru (opsional)</span>
+                    <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,image/jpg" style="display: none;" onchange="updateFileName(this)">
                 </label>
+
+                <div style="margin-top: 10px;">
+                    <img id="image-preview" src="#" alt="Preview Foto Baru" style="display: none; max-width: 150px; border-radius: 6px;" />
+                </div>
             </div>
 
             <div class="form-actions">
@@ -60,4 +64,25 @@
         </form>
     </div>
 </div>
+
+<script>
+    function updateFileName(input) {
+        const textSpan = document.getElementById('file-label-text');
+        const preview = document.getElementById('image-preview');
+
+        if (input.files && input.files[0]) {
+            textSpan.textContent = "File terpilih: " + input.files[0].name;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            textSpan.textContent = 'Pilih foto baru (opsional)';
+            preview.style.display = 'none';
+        }
+    }
+</script>
 @endsection

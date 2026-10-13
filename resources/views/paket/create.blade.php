@@ -39,11 +39,16 @@
 
             <div class="form-group">
                 <label>Foto Paket</label>
-                <label class="form-file-label">
+                <label class="form-file-label" for="foto" style="cursor: pointer;">
                     <span>📎</span>
-                    <span>Pilih foto (JPEG/PNG, maks 2MB)</span>
-                    <input type="file" name="foto" accept="image/jpeg,image/png,image/jpg">
+                    <span id="file-label-text">Pilih foto (JPEG/PNG, maks 2MB)</span>
+                    <!-- Ditambahkan id="foto" dan onchange untuk mendeteksi file -->
+                    <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,image/jpg" style="display: none;" onchange="updateFileName(this)">
                 </label>
+                <!-- Tambahan area preview gambar opsional -->
+                <div style="margin-top: 10px;">
+                    <img id="image-preview" src="#" alt="Preview" style="display: none; max-width: 200px; border-radius: 6px;" />
+                </div>
             </div>
 
             <div class="form-actions">
@@ -53,4 +58,27 @@
         </form>
     </div>
 </div>
+
+<!-- Script JavaScript untuk menampilkan nama file & preview -->
+<script>
+    function updateFileName(input) {
+        const textSpan = document.getElementById('file-label-text');
+        const preview = document.getElementById('image-preview');
+
+        if (input.files && input.files[0]) {
+            textSpan.textContent = input.files[0].name;
+
+            // Tampilkan preview gambar
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            textSpan.textContent = 'Pilih foto (JPEG/PNG, maks 2MB)';
+            preview.style.display = 'none';
+        }
+    }
+</script>
 @endsection
