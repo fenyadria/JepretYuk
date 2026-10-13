@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\PaketFoto;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class PaketFotoController extends Controller
+{
+    /**
+     * Menampilkan daftar semua paket foto.
+     */
+    public function index()
+    {
+        $pakets = PaketFoto::latest()->get();
+
+        return view('paket.index', compact('pakets'));
+    }
+
+    /**
+     * Menampilkan form untuk membuat paket foto baru.
+     */
+    public function create()
+    {
+        return view('paket.create');
+    }
+
+    /**
+     * Menyimpan paket foto baru ke database.
+     * Jika ada file foto yang diupload, simpan ke storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama_paket' => 'required|string|max:255',
+            'deskripsi'  => 'required|string',
+            'harga'      => 'required|numeric|min:0',
+            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $data = $request->only(['nama_paket', 'deskripsi', 'harga']);
+
+        // Upload foto jika ada
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('paket_fotos', 'public');
+        }
+
+        PaketFoto::create($data);
+
+        return redirect()->route('paket.index')->with('success', 'Paket foto berhasil ditambahkan.');
+    }
+
+    /**
+     * Menampilkan form edit untuk paket foto tertentu.
+     */
+    public function edit(PaketFoto $paket)
+    {
+        return view('paket.edit', compact('paket'));
+    }
+
+    /**
+     * Memperbarui data paket foto di database.
+     * Jika ada foto baru, hapus foto lama dan simpan yang baru.
+     */
+    public function update(Request $request, PaketFoto $paket)
+    {
+        $request->validate([
+            'nama_paket' => 'required|string|max:255',
+            'deskripsi'  => 'required|string',
+            'harga'      => 'required|numeric|min:0',
+            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $data = $request->only(['nama_paket', 'deskripsi', 'harga']);
+
+        // Upload foto baru jika ada, hapus foto lama
+        if ($request->hasFile('foto')) {
+            if ($paket->foto) {
+                Storage::disk('public')->delete($paket->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('paket_fotos', 'public');
+        }
+
+        $paket->update($data);
+
+        return redirect()->route('paket.index')->with('success', 'Paket foto berhasil diperbarui.');
+    }
+
+    /**
+     * Menghapus paket foto dari database.
+     * Jika ada file foto, hapus juga dari storage.
+     */
+    public function destroy(PaketFoto $paket)
+    {
+        // Hapus file foto dari storage jika ada
+        if ($paket->foto) {
+            Storage::disk('public')->delete($paket->foto);
+        }
+
+        $paket->delete();
+
+        return redirect()->route('paket.index')->with('success', 'Paket foto berhasil dihapus.');
+    }
+}
