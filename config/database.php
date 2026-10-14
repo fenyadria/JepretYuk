@@ -87,9 +87,15 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
-            'host' => env('DB_ENDPOINT') 
-                ? env('DB_HOST', '127.0.0.1') . ";options='endpoint=" . env('DB_ENDPOINT') . "'"
-                : env('DB_HOST', '127.0.0.1'),
+            'host' => (function () {
+                $host = env('DB_HOST', '127.0.0.1');
+                // Jika host adalah Neon.tech, ambil endpoint ID (bagian pertama sebelum titik pertama)
+                if (str_contains($host, 'neon.tech')) {
+                    $endpoint = env('DB_ENDPOINT') ?: explode('.', $host)[0];
+                    return $host . ";options='endpoint=" . $endpoint . "'";
+                }
+                return $host;
+            })(),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
