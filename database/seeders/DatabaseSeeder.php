@@ -13,21 +13,19 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     *
+     * Membuat 1 akun Fotografer/Admin permanen.
+     * Menggunakan firstOrCreate agar tidak duplikat saat re-seed.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
-        User::create([
-        'name' => 'Admin JepretYuk',
-        'email' => 'admin@jepretyuk.com',
-        'password' => Hash::make('123456'), 
-        'role' => 'fotografer', 
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@jepretyuk.com'],
+            [
+                'name'     => 'Admin JepretYuk',
+                'password' => Hash::make('password'),
+                'role'     => 'fotografer',
+            ]
+        );
     }
 }

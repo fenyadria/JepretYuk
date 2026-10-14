@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('paket_id')->constrained('paket_fotos')->onDelete('cascade');
             $table->date('tanggal');
             $table->string('lokasi');
-            $table->enum('status', ['menunggu', 'disetujui', 'selesai'])->default('menunggu');
+            $table->enum('status', ['menunggu', 'disetujui', 'ditolak', 'selesai'])->default('menunggu');
             $table->timestamps();
         });
     }

@@ -103,7 +103,7 @@ class PesananController extends Controller
         if ($user->role === 'fotografer') {
             // Fotografer hanya mengubah status pesanan
             $request->validate([
-                'status' => 'required|in:menunggu,disetujui,selesai',
+                'status' => 'required|in:menunggu,disetujui,ditolak,selesai',
             ]);
 
             $pesanan->update([
