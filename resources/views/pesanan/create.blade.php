@@ -21,7 +21,7 @@
                 Belum ada paket foto yang tersedia. Silakan hubungi fotografer.
             </div>
         @else
-            <form method="POST" action="{{ route('pesanan.store') }}">
+            <form method="POST" action="{{ route('pesanan.store') }}" enctype="multipart/form-data">
                 @csrf
 
                 <div class="form-group">
@@ -29,7 +29,7 @@
                     <select name="paket_id" id="paket_id" class="form-control" required>
                         <option value="">-- Pilih Paket --</option>
                         @foreach($pakets as $paket)
-                            <option value="{{ $paket->id }}" {{ old('paket_id') == $paket->id ? 'selected' : '' }}>
+                            <option value="{{ $paket->id }}" {{ old('paket_id', request('paket_id')) == $paket->id ? 'selected' : '' }}>
                                 {{ $paket->nama_paket }} — Rp {{ number_format($paket->harga, 0, ',', '.') }}
                             </option>
                         @endforeach
@@ -46,6 +46,18 @@
                     <label for="lokasi">Lokasi</label>
                     <input type="text" name="lokasi" id="lokasi" class="form-control"
                            value="{{ old('lokasi') }}" placeholder="Contoh: Taman Mini Indonesia Indah, Jakarta" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="catatan_klien">Catatan Tambahan (Opsional)</label>
+                    <textarea name="catatan_klien" id="catatan_klien" class="form-control" rows="3"
+                              placeholder="Contoh: Konsep pakaian vintage, mohon bawa properti balon">{{ old('catatan_klien') }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="bukti_pembayaran">Bukti Pembayaran / DP (Opsional)</label>
+                    <input type="file" name="bukti_pembayaran" id="bukti_pembayaran" class="form-control" accept="image/*">
+                    <small style="color: #64748b; font-size: 13px;">Format gambar (JPG, PNG) maksimal 3MB.</small>
                 </div>
 
                 <div class="form-actions">

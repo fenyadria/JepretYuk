@@ -33,8 +33,17 @@
         </div>
 
         @if($isAdmin)
-            {{-- Fotografer: hanya ubah status --}}
-            <form method="POST" action="{{ route('fotografer.pesanan.update', $pesanan->id) }}">
+            {{-- Fotografer: ubah status & beri catatan/alasan --}}
+            <form method="POST" action="{{ route('fotografer.pesanan.update', $pesanan->id) }}"
+                  onsubmit="
+                    const st = document.getElementById('status').value;
+                    if (st === 'selesai') {
+                        return confirm('⚠️ PERINGATAN FINAL:\nMengubah status menjadi SELESAI akan MENGUNCI pesanan ini secara permanen.\n\nSetelah ini status tidak dapat diubah lagi. Apakah Anda yakin sesi foto telah selesai?');
+                    } else if (st === 'ditolak') {
+                        return confirm('⚠️ KONFIRMASI PENOLAKAN:\nApakah Anda yakin ingin MENOLAK pesanan ini? Pastikan Anda telah mengisi alasan penolakan di kolom catatan.');
+                    }
+                    return confirm('Konfirmasi: Simpan pembaruan status pesanan #' + {{ $pesanan->id }} + '?');
+                  ">
                 @csrf
                 @method('PUT')
 
@@ -43,9 +52,25 @@
                     <select name="status" id="status" class="form-control" required>
                         <option value="menunggu" {{ old('status', $pesanan->status) === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
                         <option value="disetujui" {{ old('status', $pesanan->status) === 'disetujui' ? 'selected' : '' }}>Disetujui</option>
+                        <option value="ditolak" {{ old('status', $pesanan->status) === 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                         <option value="selesai" {{ old('status', $pesanan->status) === 'selesai' ? 'selected' : '' }}>Selesai</option>
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <label for="catatan_fotografer">Catatan Fotografer / Alasan Penolakan</label>
+                    <textarea name="catatan_fotografer" id="catatan_fotografer" class="form-control" rows="3"
+                              placeholder="Tuliskan catatan untuk klien (misal: alasan ditolak atau perlengkapan yang perlu disiapkan)">{{ old('catatan_fotografer', $pesanan->catatan_fotografer) }}</textarea>
+                </div>
+
+                @if($pesanan->bukti_pembayaran)
+                    <div class="form-group">
+                        <label>Bukti Pembayaran dari Klien:</label>
+                        <div>
+                            <a href="{{ asset('storage/' . $pesanan->bukti_pembayaran) }}" target="_blank" class="btn btn-sm btn-outline-dark">Lihat Bukti Transfer</a>
+                        </div>
+                    </div>
+                @endif
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-accent">Perbarui Status</button>
@@ -54,7 +79,7 @@
             </form>
         @else
             {{-- Klien: ubah detail pesanan --}}
-            <form method="POST" action="{{ route('pesanan.update', $pesanan) }}">
+            <form method="POST" action="{{ route('pesanan.update', $pesanan) }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -79,6 +104,21 @@
                     <label for="lokasi">Lokasi</label>
                     <input type="text" name="lokasi" id="lokasi" class="form-control"
                            value="{{ old('lokasi', $pesanan->lokasi) }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="catatan_klien">Catatan Tambahan (Opsional)</label>
+                    <textarea name="catatan_klien" id="catatan_klien" class="form-control" rows="3">{{ old('catatan_klien', $pesanan->catatan_klien) }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="bukti_pembayaran">Unggah / Ganti Bukti Pembayaran</label>
+                    @if($pesanan->bukti_pembayaran)
+                        <div style="margin-bottom: 8px;">
+                            <a href="{{ asset('storage/' . $pesanan->bukti_pembayaran) }}" target="_blank" style="font-size: 13px; color: #2563eb;">Lihat Bukti yang Sudah Diunggah</a>
+                        </div>
+                    @endif
+                    <input type="file" name="bukti_pembayaran" id="bukti_pembayaran" class="form-control" accept="image/*">
                 </div>
 
                 <div class="form-actions">

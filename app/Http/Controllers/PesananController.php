@@ -6,35 +6,63 @@ use App\Models\PaketFoto;
 use App\Models\Pesanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PesananController extends Controller
 {
     /**
-     * Menampilkan daftar pesanan.
-     * - Fotografer: melihat SEMUA pesanan dari semua klien.
-     * - Klien: hanya melihat pesanan miliknya sendiri.
+     * Menampilkan daftar pesanan dengan filter & pencarian lengkap:
+     * - Status (menunggu, disetujui, ditolak, selesai)
+     * - Tanggal sesi foto
+     * - Keyword pencarian (nama klien, lokasi, nama paket)
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        if ($user->role === 'fotografer') {
-            // Fotografer bisa lihat semua pesanan beserta data klien dan paket
-            $pesanans = Pesanan::with(['klien', 'paketFoto'])->latest()->get();
-        } else {
-            // Klien hanya lihat pesanan miliknya sendiri
-            $pesanans = Pesanan::with('paketFoto')
-                ->where('klien_id', $user->id)
-                ->latest()
-                ->get();
+        $query = Pesanan::with(['klien', 'paketFoto']);
+
+        if ($user->role === 'klien') {
+            // Klien hanya melihat pesanan miliknya sendiri
+            $query->where('klien_id', $user->id);
         }
+
+        // Filter: Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter: Tanggal Sesi
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal', $request->tanggal);
+        }
+
+        // Fitur Pencarian (Lokasi, Nama Klien, Nama Paket)
+        if ($request->filled('q')) {
+            $keyword = trim($request->q);
+            $query->where(function ($q) use ($keyword, $user) {
+                $q->where('lokasi', 'like', "%{$keyword}%")
+                  ->orWhereHas('paketFoto', function ($sub) use ($keyword) {
+                      $sub->where('nama_paket', 'like', "%{$keyword}%");
+                  });
+
+                // Jika fotografer, bisa juga mencari berdasarkan nama klien
+                if ($user->role === 'fotografer') {
+                    $q->orWhereHas('klien', function ($sub) use ($keyword) {
+                        $sub->where('name', 'like', "%{$keyword}%")
+                            ->orWhere('email', 'like', "%{$keyword}%");
+                    });
+                }
+            });
+        }
+
+        $pesanans = $query->latest()->get();
 
         return view('pesanan.index', compact('pesanans'));
     }
 
     /**
      * Menampilkan form untuk membuat pesanan baru (hanya klien).
-     * Mengirim data paket foto yang tersedia ke view.
      */
     public function create()
     {
@@ -44,45 +72,96 @@ class PesananController extends Controller
     }
 
     /**
-     * Menyimpan pesanan baru ke database.
-     * klien_id diambil dari user yang sedang login.
-     * Status default: 'menunggu'.
+     * Menyimpan pesanan baru ke database dengan validasi bentrok jadwal & upload bukti transfer.
      */
     public function store(Request $request)
     {
         $request->validate([
-            'paket_id' => 'required|exists:paket_fotos,id',
-            'tanggal'  => 'required|date|after_or_equal:today',
-            'lokasi'   => 'required|string|max:255',
+            'paket_id'         => 'required|exists:paket_fotos,id',
+            'tanggal'          => 'required|date|after_or_equal:today',
+            'lokasi'           => 'required|string|max:255',
+            'catatan_klien'    => 'nullable|string|max:1000',
+            'bukti_pembayaran' => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
+        ], [
+            'tanggal.after_or_equal' => 'Tanggal sesi foto minimal hari ini atau hari berikutnya.',
+            'bukti_pembayaran.image' => 'File bukti pembayaran harus berupa gambar (JPG, PNG).',
+            'bukti_pembayaran.max'   => 'Ukuran file bukti pembayaran maksimal 3MB.',
         ]);
 
-        Pesanan::create([
-            'klien_id' => Auth::id(),
-            'paket_id' => $request->paket_id,
-            'tanggal'  => $request->tanggal,
-            'lokasi'   => $request->lokasi,
-            'status'   => 'menunggu',
-        ]);
+        // CEK VALIDASI BENTROK JADWAL:
+        // Cek apakah studio sudah memiliki pesanan 'disetujui' pada tanggal tersebut
+        $jadwalBentrok = Pesanan::where('tanggal', $request->tanggal)
+            ->where('status', 'disetujui')
+            ->exists();
 
-        return redirect()->route('pesanan.index')->with('success', 'Pesanan berhasil dibuat.');
+        if ($jadwalBentrok) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'tanggal' => 'Jadwal pada tanggal ' . date('d-m-Y', strtotime($request->tanggal)) . ' sudah dibooking dan disetujui untuk sesi lain. Silakan pilih tanggal lain.'
+                ]);
+        }
+
+        $data = [
+            'klien_id'      => Auth::id(),
+            'paket_id'      => $request->paket_id,
+            'tanggal'       => $request->tanggal,
+            'lokasi'        => $request->lokasi,
+            'catatan_klien' => $request->catatan_klien,
+            'status'        => 'menunggu',
+        ];
+
+        // Upload bukti pembayaran jika diunggah
+        if ($request->hasFile('bukti_pembayaran')) {
+            $data['bukti_pembayaran'] = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
+        }
+
+        Pesanan::create($data);
+
+        return redirect()->route('pesanan.index')->with('success', 'Pesanan berhasil dibuat dan menunggu persetujuan fotografer.');
+    }
+
+    /**
+     * Menampilkan detail lengkap satu pesanan.
+     * - Fotografer: bisa melihat detail pesanan manapun.
+     * - Klien: hanya bisa melihat detail pesanan miliknya sendiri.
+     */
+    public function show(Pesanan $pesanan)
+    {
+        $user = Auth::user();
+
+        // Klien hanya boleh melihat pesanan miliknya sendiri
+        if ($user->role === 'klien' && $pesanan->klien_id !== $user->id) {
+            return redirect()->route('pesanan.index')->with('error', 'Akses ditolak: Anda tidak memiliki akses ke pesanan ini.');
+        }
+
+        $pesanan->load(['klien', 'paketFoto']);
+
+        return view('pesanan.show', compact('pesanan'));
     }
 
     /**
      * Menampilkan form edit pesanan.
-     * - Fotografer: bisa edit status pesanan manapun.
-     * - Klien: hanya bisa edit pesanan miliknya yang masih berstatus 'menunggu'.
      */
     public function edit(Pesanan $pesanan)
     {
         $user = Auth::user();
 
-        // Klien hanya bisa edit pesanan miliknya yang masih menunggu
+        // Fotografer tidak bisa mengedit pesanan yang sudah berstatus 'selesai' (final/terkunci)
+        if ($user->role === 'fotografer') {
+            if ($pesanan->status === 'selesai') {
+                return redirect()->route('fotografer.pesanan.index')
+                    ->with('error', 'Pesanan #' . $pesanan->id . ' sudah berstatus SELESAI dan terkunci permanen. Status tidak dapat diubah kembali.');
+            }
+        }
+
+        // Klien hanya bisa edit pesanan miliknya yang masih berstatus 'menunggu'
         if ($user->role === 'klien') {
             if ($pesanan->klien_id !== $user->id) {
                 return redirect()->route('pesanan.index')->with('error', 'Akses ditolak.');
             }
             if ($pesanan->status !== 'menunggu') {
-                return redirect()->route('pesanan.index')->with('error', 'Pesanan sudah diproses, tidak bisa diedit.');
+                return redirect()->route('pesanan.index')->with('error', 'Pesanan sudah diproses (' . $pesanan->status . '), tidak dapat diubah.');
             }
         }
 
@@ -92,27 +171,50 @@ class PesananController extends Controller
     }
 
     /**
-     * Memperbarui data pesanan di database.
-     * - Fotografer: bisa mengubah status pesanan (menunggu -> disetujui -> selesai).
-     * - Klien: bisa mengubah detail pesanan (paket, tanggal, lokasi) selama masih 'menunggu'.
+     * Memperbarui data pesanan di database:
+     * - Fotografer: Ubah status + beri catatan/alasan penolakan (hanya jika belum selesai)
+     * - Klien: Ubah detail pesanan + update bukti transfer / catatan (hanya jika masih menunggu)
      */
     public function update(Request $request, Pesanan $pesanan)
     {
         $user = Auth::user();
 
         if ($user->role === 'fotografer') {
-            // Fotografer hanya mengubah status pesanan
+            // Validasi: Status yang sudah selesai tidak dapat diubah lagi
+            if ($pesanan->status === 'selesai') {
+                return redirect()->route('fotografer.pesanan.index')
+                    ->with('error', 'Akses ditolak: Pesanan #' . $pesanan->id . ' sudah berstatus SELESAI dan bersifat final.');
+            }
+
             $request->validate([
-                'status' => 'required|in:menunggu,disetujui,ditolak,selesai',
+                'status'             => 'required|in:menunggu,disetujui,ditolak,selesai',
+                'catatan_fotografer' => 'nullable|string|max:1000',
             ]);
+
+            // Jika status hendak disetujui, pastikan tidak bentrok dengan pesanan disetujui lainnya pada tanggal yang sama
+            if ($request->status === 'disetujui') {
+                $bentrok = Pesanan::where('tanggal', $pesanan->tanggal)
+                    ->where('status', 'disetujui')
+                    ->where('id', '!=', $pesanan->id)
+                    ->exists();
+
+                if ($bentrok) {
+                    return back()
+                        ->withInput()
+                        ->withErrors([
+                            'status' => 'Tidak dapat menyetujui pesanan ini karena sudah ada pesanan lain yang DISETUJUI pada tanggal ' . date('d-m-Y', strtotime($pesanan->tanggal)) . '.'
+                        ]);
+                }
+            }
 
             $pesanan->update([
-                'status' => $request->status,
+                'status'             => $request->status,
+                'catatan_fotografer' => $request->catatan_fotografer,
             ]);
 
-            return redirect()->route('fotografer.pesanan.index')->with('success', 'Status pesanan berhasil diperbarui.');
+            return redirect()->route('fotografer.pesanan.index')->with('success', 'Status pesanan #' . $pesanan->id . ' berhasil diperbarui menjadi ' . $request->status . '.');
         } else {
-            // Klien mengubah detail pesanan (hanya jika masih menunggu)
+            // Role Klien
             if ($pesanan->klien_id !== $user->id) {
                 return redirect()->route('pesanan.index')->with('error', 'Akses ditolak.');
             }
@@ -121,21 +223,75 @@ class PesananController extends Controller
             }
 
             $request->validate([
-                'paket_id' => 'required|exists:paket_fotos,id',
-                'tanggal'  => 'required|date|after_or_equal:today',
-                'lokasi'   => 'required|string|max:255',
+                'paket_id'         => 'required|exists:paket_fotos,id',
+                'tanggal'          => 'required|date|after_or_equal:today',
+                'lokasi'           => 'required|string|max:255',
+                'catatan_klien'    => 'nullable|string|max:1000',
+                'bukti_pembayaran' => 'nullable|image|mimes:jpeg,png,jpg|max:3072',
             ]);
 
-            $pesanan->update($request->only(['paket_id', 'tanggal', 'lokasi']));
+            // Cek bentrok jika tanggal diubah
+            if ($pesanan->tanggal !== $request->tanggal) {
+                $bentrok = Pesanan::where('tanggal', $request->tanggal)
+                    ->where('status', 'disetujui')
+                    ->exists();
 
-            return redirect()->route('pesanan.index')->with('success', 'Pesanan berhasil diperbarui.');
+                if ($bentrok) {
+                    return back()
+                        ->withInput()
+                        ->withErrors([
+                            'tanggal' => 'Jadwal pada tanggal ' . date('d-m-Y', strtotime($request->tanggal)) . ' sudah penuh/disetujui. Silakan pilih tanggal lain.'
+                        ]);
+                }
+            }
+
+            $data = $request->only(['paket_id', 'tanggal', 'lokasi', 'catatan_klien']);
+
+            // Update bukti pembayaran jika diupload ulang
+            if ($request->hasFile('bukti_pembayaran')) {
+                if ($pesanan->bukti_pembayaran) {
+                    Storage::disk('public')->delete($pesanan->bukti_pembayaran);
+                }
+                $data['bukti_pembayaran'] = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
+            }
+
+            $pesanan->update($data);
+
+            return redirect()->route('pesanan.index')->with('success', 'Pesanan #' . $pesanan->id . ' berhasil diperbarui.');
         }
     }
 
     /**
-     * Menghapus pesanan dari database.
-     * - Fotografer: bisa hapus pesanan manapun.
-     * - Klien: hanya bisa hapus pesanan miliknya yang masih 'menunggu'.
+     * Upload bukti pembayaran secara terpisah (quick action untuk klien).
+     */
+    public function uploadBukti(Request $request, Pesanan $pesanan)
+    {
+        $user = Auth::user();
+
+        if ($pesanan->klien_id !== $user->id) {
+            return redirect()->route('pesanan.index')->with('error', 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg|max:3072',
+        ], [
+            'bukti_pembayaran.required' => 'File bukti pembayaran wajib dipilih.',
+            'bukti_pembayaran.image'    => 'File harus berupa gambar.',
+            'bukti_pembayaran.max'      => 'Ukuran file maksimal 3MB.',
+        ]);
+
+        if ($pesanan->bukti_pembayaran) {
+            Storage::disk('public')->delete($pesanan->bukti_pembayaran);
+        }
+
+        $path = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
+        $pesanan->update(['bukti_pembayaran' => $path]);
+
+        return redirect()->route('pesanan.index')->with('success', 'Bukti pembayaran berhasil diunggah.');
+    }
+
+    /**
+     * Menghapus pesanan dari database beserta berkas bukti pembayaran.
      */
     public function destroy(Pesanan $pesanan)
     {
@@ -146,12 +302,18 @@ class PesananController extends Controller
                 return redirect()->route('pesanan.index')->with('error', 'Akses ditolak.');
             }
             if ($pesanan->status !== 'menunggu') {
-                return redirect()->route('pesanan.index')->with('error', 'Pesanan sudah diproses, tidak bisa dihapus.');
+                return redirect()->route('pesanan.index')->with('error', 'Pesanan sudah diproses (' . $pesanan->status . '), tidak dapat dibatalkan/dihapus.');
             }
+        }
+
+        // Hapus file bukti pembayaran dari storage jika ada
+        if ($pesanan->bukti_pembayaran) {
+            Storage::disk('public')->delete($pesanan->bukti_pembayaran);
         }
 
         $pesanan->delete();
 
-        return redirect()->route('pesanan.index')->with('success', 'Pesanan berhasil dihapus.');
+        $redirectRoute = ($user->role === 'fotografer') ? 'fotografer.pesanan.index' : 'pesanan.index';
+        return redirect()->route($redirectRoute)->with('success', 'Pesanan #' . $pesanan->id . ' berhasil dihapus.');
     }
 }

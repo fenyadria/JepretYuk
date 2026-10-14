@@ -17,14 +17,16 @@
             <a href="/" class="nav-brand">JepretYuk</a>
             <div class="nav-links">
                 @guest
+                    <a href="{{ route('paket.katalog') }}">Pilihan Paket</a>
                     <a href="{{ route('login') }}">Masuk</a>
                     <a href="{{ route('register') }}">Daftar</a>
                 @else
                     <span class="nav-user">{{ Auth::user()->name }}</span>
                     @if(Auth::user()->role === 'fotografer')
-                        <a href="{{ route('paket.index') }}">Paket Foto</a>
-                        <a href="{{ route('fotografer.pesanan.index') }}">Pesanan</a>
+                        <a href="{{ route('paket.index') }}">Kelola Paket</a>
+                        <a href="{{ route('fotografer.pesanan.index') }}">Daftar Pesanan</a>
                     @else
+                        <a href="{{ route('klien.paket.index') }}">Pilihan Paket</a>
                         <a href="{{ route('pesanan.index') }}">Pesanan Saya</a>
                         <a href="{{ route('pesanan.create') }}">Buat Pesanan</a>
                     @endif

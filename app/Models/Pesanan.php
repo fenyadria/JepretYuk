@@ -23,6 +23,9 @@ class Pesanan extends Model
         'tanggal',
         'lokasi',
         'status',
+        'catatan_klien',
+        'catatan_fotografer',
+        'bukti_pembayaran',
     ];
 
     /**

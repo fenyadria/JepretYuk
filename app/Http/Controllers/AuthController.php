@@ -87,16 +87,16 @@ class AuthController extends Controller
     }
 
     /**
-     * Mengarahkan user ke halaman dashboard sesuai role.
-     * - Fotografer -> dashboard fotografer (kelola paket & pesanan)
-     * - Klien     -> dashboard klien (lihat paket & buat pesanan)
+     * Mengarahkan user ke halaman utama sesuai role.
+     * - Fotografer -> kelola paket foto (/fotografer/paket)
+     * - Klien     -> daftar pesanan saya (/klien/pesanan)
      */
     private function redirectByRole($user)
     {
         if ($user->role === 'fotografer') {
-            return redirect('/fotografer/paket')->with('success', 'Selamat datang, Fotografer!');
+            return redirect('/fotografer/paket')->with('success', 'Selamat datang kembali, Fotografer!');
         }
 
-        return redirect('/klien/pesanan')->with('success', 'Selamat datang, Klien!');
+        return redirect('/klien/pesanan')->with('success', 'Selamat datang di JepretYuk!');
     }
 }

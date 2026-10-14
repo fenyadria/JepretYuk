@@ -9,13 +9,39 @@ use Illuminate\Support\Facades\Storage;
 class PaketFotoController extends Controller
 {
     /**
-     * Menampilkan daftar semua paket foto.
+     * Menampilkan daftar paket foto dengan fitur pencarian nama atau deskripsi.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pakets = PaketFoto::latest()->get();
+        $query = PaketFoto::query();
+
+        if ($request->filled('q')) {
+            $keyword = trim($request->q);
+            $query->where('nama_paket', 'like', "%{$keyword}%")
+                  ->orWhere('deskripsi', 'like', "%{$keyword}%");
+        }
+
+        $pakets = $query->latest()->get();
 
         return view('paket.index', compact('pakets'));
+    }
+
+    /**
+     * Menampilkan katalog paket foto khusus untuk klien dan publik (tampilan etalase foto).
+     */
+    public function katalog(Request $request)
+    {
+        $query = PaketFoto::query();
+
+        if ($request->filled('q')) {
+            $keyword = trim($request->q);
+            $query->where('nama_paket', 'like', "%{$keyword}%")
+                  ->orWhere('deskripsi', 'like', "%{$keyword}%");
+        }
+
+        $pakets = $query->latest()->get();
+
+        return view('paket.katalog', compact('pakets'));
     }
 
     /**
@@ -93,6 +119,12 @@ class PaketFotoController extends Controller
      */
     public function destroy(PaketFoto $paket)
     {
+        // Proteksi: Cegah penghapusan jika paket masih digunakan oleh pesanan klien
+        if ($paket->pesanans()->exists()) {
+            return redirect()->route('paket.index')
+                ->with('error', 'Gagal menghapus: Paket foto "' . $paket->nama_paket . '" masih digunakan oleh riwayat/pesanan klien.');
+        }
+
         // Hapus file foto dari storage jika ada
         if ($paket->foto) {
             Storage::disk('public')->delete($paket->foto);

@@ -32,7 +32,7 @@
                         <div class="paket-card-actions">
                             <a href="{{ route('paket.edit', $paket) }}" class="btn btn-sm btn-primary">Edit</a>
                             <form action="{{ route('paket.destroy', $paket) }}" method="POST"
-                                  onsubmit="return confirm('Yakin ingin menghapus paket ini?')">
+                                  onsubmit="return confirm('⚠️ PERINGATAN HAPUS PAKET:\nApakah Anda yakin ingin menghapus paket foto \'{{ $paket->nama_paket }}\'?\n\nPaket ini tidak dapat dihapus jika masih terkait dengan pesanan klien.')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger">Hapus</button>

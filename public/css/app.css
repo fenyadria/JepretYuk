@@ -560,6 +560,11 @@ textarea.form-control {
     color: #1e8449;
 }
 
+.badge-ditolak {
+    background: var(--danger-bg);
+    color: #c0392b;
+}
+
 /* --- Alerts --- */
 .alert {
     padding: 14px 18px;

@@ -34,27 +34,39 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
 
         // ----------------------------------------------------------
-        // CUSTOM ERROR HANDLING
+        // CUSTOM ERROR HANDLING LENGKAP
         // ----------------------------------------------------------
         // Mengalihkan error HTTP ke view custom di resources/views/errors/
-        // agar user tidak melihat halaman error default Laravel.
+        // agar user tidak melihat error code mentah sistem bawaan.
         // ----------------------------------------------------------
 
         // Error 404 - Halaman Tidak Ditemukan
-        $exceptions->renderable(function (NotFoundHttpException $e) {
+        $exceptions->renderable(function (NotFoundHttpException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Resource tidak ditemukan.'], 404);
+            }
             return response()->view('errors.404', [], 404);
         });
 
         // Error 403 - Akses Ditolak (Forbidden)
-        $exceptions->renderable(function (HttpException $e) {
+        $exceptions->renderable(function (HttpException $e, $request) {
             if ($e->getStatusCode() === 403) {
+                if ($request->is('api/*')) {
+                    return response()->json(['message' => 'Akses ditolak.'], 403);
+                }
                 return response()->view('errors.403', [], 403);
             }
         });
 
-        // Error 500 - Internal Server Error (hanya di production)
-        $exceptions->renderable(function (\Throwable $e) {
-            if (!($e instanceof HttpException) && app()->environment('production')) {
+        // Error 500 - Internal Server Error
+        $exceptions->renderable(function (\Throwable $e, $request) {
+            // Jika request API
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Terjadi kesalahan pada server.'], 500);
+            }
+
+            // Jika di environment production atau APP_DEBUG false, alihkan ke view 500 custom
+            if (!config('app.debug') || app()->environment('production')) {
                 return response()->view('errors.500', [], 500);
             }
         });
