@@ -38,11 +38,11 @@
                   onsubmit="
                     const st = document.getElementById('status').value;
                     if (st === 'selesai') {
-                        return confirm('⚠️ PERINGATAN FINAL:\nMengubah status menjadi SELESAI akan MENGUNCI pesanan ini secara permanen.\n\nSetelah ini status tidak dapat diubah lagi. Apakah Anda yakin sesi foto telah selesai?');
+                        return confirm('Pesanan dengan status selesai tidak dapat diubah kembali. Lanjutkan?');
                     } else if (st === 'ditolak') {
-                        return confirm('⚠️ KONFIRMASI PENOLAKAN:\nApakah Anda yakin ingin MENOLAK pesanan ini? Pastikan Anda telah mengisi alasan penolakan di kolom catatan.');
+                        return confirm('Yakin ingin menolak pesanan ini?');
                     }
-                    return confirm('Konfirmasi: Simpan pembaruan status pesanan #' + {{ $pesanan->id }} + '?');
+                    return true;
                   ">
                 @csrf
                 @method('PUT')
@@ -58,14 +58,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="catatan_fotografer">Catatan Fotografer / Alasan Penolakan</label>
+                    <label for="catatan_fotografer">Catatan untuk Klien</label>
                     <textarea name="catatan_fotografer" id="catatan_fotografer" class="form-control" rows="3"
-                              placeholder="Tuliskan catatan untuk klien (misal: alasan ditolak atau perlengkapan yang perlu disiapkan)">{{ old('catatan_fotografer', $pesanan->catatan_fotografer) }}</textarea>
+                              placeholder="Catatan atau keterangan (opsional)">{{ old('catatan_fotografer', $pesanan->catatan_fotografer) }}</textarea>
                 </div>
 
                 @if($pesanan->bukti_pembayaran)
                     <div class="form-group">
-                        <label>Bukti Pembayaran dari Klien:</label>
+                        <label>Bukti Pembayaran</label>
                         <div>
                             <a href="{{ asset('storage/' . $pesanan->bukti_pembayaran) }}" target="_blank" class="btn btn-sm btn-outline-dark">Lihat Bukti Transfer</a>
                         </div>

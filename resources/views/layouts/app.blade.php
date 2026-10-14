@@ -25,6 +25,7 @@
                     @if(Auth::user()->role === 'fotografer')
                         <a href="{{ route('paket.index') }}">Kelola Paket</a>
                         <a href="{{ route('fotografer.pesanan.index') }}">Daftar Pesanan</a>
+                        <a href="{{ route('fotografer.admin.index') }}">Kelola Admin</a>
                     @else
                         <a href="{{ route('klien.paket.index') }}">Pilihan Paket</a>
                         <a href="{{ route('pesanan.index') }}">Pesanan Saya</a>

@@ -42,6 +42,12 @@ Route::middleware(['auth', 'role.fotografer'])->prefix('fotografer')->group(func
     Route::get('/pesanan/{pesanan}/edit', [PesananController::class, 'edit'])->name('fotografer.pesanan.edit');
     Route::put('/pesanan/{pesanan}', [PesananController::class, 'update'])->name('fotografer.pesanan.update');
     Route::delete('/pesanan/{pesanan}', [PesananController::class, 'destroy'])->name('fotografer.pesanan.destroy');
+
+    // Kelola Tim Fotografer / Admin
+    Route::get('/admin-team', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('fotografer.admin.index');
+    Route::get('/admin-team/create', [\App\Http\Controllers\AdminUserController::class, 'create'])->name('fotografer.admin.create');
+    Route::post('/admin-team', [\App\Http\Controllers\AdminUserController::class, 'store'])->name('fotografer.admin.store');
+    Route::delete('/admin-team/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('fotografer.admin.destroy');
 });
 
 

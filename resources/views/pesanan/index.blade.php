@@ -59,8 +59,7 @@
                         <th>Tanggal Sesi</th>
                         <th>Lokasi</th>
                         <th>Status</th>
-                        <th style="min-width: 260px;">Catatan & Detail</th>
-                        <th>Aksi</th>
+                        <th style="text-align: center; width: 160px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,68 +69,34 @@
                             @if($isAdmin)
                                 <td>
                                     <strong>{{ $pesanan->klien->name ?? '-' }}</strong>
-                                    <div style="font-size: 0.8rem; color: #64748b;">{{ $pesanan->klien->email ?? '' }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ $pesanan->klien->email ?? '' }}</div>
                                 </td>
                             @endif
                             <td>
                                 <strong>{{ $pesanan->paketFoto->nama_paket ?? '-' }}</strong>
-                                <div style="font-size: 0.82rem; color: #d4a853; font-weight: 600;">
+                                <div style="font-size: 0.82rem; color: var(--accent); font-weight: 600;">
                                     Rp {{ number_format($pesanan->paketFoto->harga ?? 0, 0, ',', '.') }}
                                 </div>
                             </td>
                             <td>
-                                <strong>{{ \Carbon\Carbon::parse($pesanan->tanggal)->format('d M Y') }}</strong>
+                                {{ \Carbon\Carbon::parse($pesanan->tanggal)->format('d M Y') }}
                             </td>
                             <td>{{ $pesanan->lokasi }}</td>
                             <td>
                                 <span class="badge badge-{{ $pesanan->status }}">{{ ucfirst($pesanan->status) }}</span>
                             </td>
-                            <td>
-                                {{-- Catatan dari Fotografer (Paling Penting untuk Klien!) --}}
-                                @if($pesanan->catatan_fotografer)
-                                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 3px solid #16a34a; border-radius: 6px; padding: 8px 10px; font-size: 0.85rem; color: #166534; margin-bottom: 6px;">
-                                        <div style="font-weight: 700; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
-                                            📸 Catatan Fotografer:
-                                        </div>
-                                        <span>"{{ $pesanan->catatan_fotografer }}"</span>
-                                    </div>
-                                @endif
-
-                                {{-- Catatan dari Klien --}}
-                                @if($pesanan->catatan_klien)
-                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.82rem; color: #475569; margin-bottom: 6px;">
-                                        <strong>📝 Catatan Klien:</strong> {{ $pesanan->catatan_klien }}
-                                    </div>
-                                @endif
-
-                                {{-- Bukti Pembayaran / Transfer --}}
-                                @if($pesanan->bukti_pembayaran)
-                                    <div>
-                                        <a href="{{ asset('storage/' . $pesanan->bukti_pembayaran) }}" target="_blank" class="btn btn-sm btn-outline-dark" style="font-size: 0.78rem; padding: 3px 8px;">
-                                            🧾 Lihat Bukti Transfer
-                                        </a>
-                                    </div>
-                                @elseif(!$pesanan->catatan_fotografer && !$pesanan->catatan_klien)
-                                    <span style="color: #94a3b8; font-size: 0.82rem;">Tidak ada catatan</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="table-actions">
-                                    {{-- Tombol Lihat Detail untuk Klien & Admin --}}
+                            <td style="text-align: center;">
+                                <div class="table-actions" style="justify-content: center;">
                                     <a href="{{ $isAdmin ? route('fotografer.pesanan.show', $pesanan) : route('pesanan.show', $pesanan) }}" class="btn btn-sm btn-outline-dark">
                                         Detail
                                     </a>
 
                                     @if($isAdmin)
-                                        @if($pesanan->status === 'selesai')
-                                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; color: #059669; font-weight: 600; padding: 4px 8px; background: #ecfdf5; border-radius: 4px; border: 1px solid #a7f3d0;">
-                                                🔒 Selesai
-                                            </span>
-                                        @else
+                                        @if($pesanan->status !== 'selesai')
                                             <a href="{{ route('fotografer.pesanan.edit', $pesanan) }}" class="btn btn-sm btn-primary">Ubah Status</a>
                                         @endif
                                         <form action="{{ route('fotografer.pesanan.destroy', $pesanan) }}" method="POST"
-                                              onsubmit="return confirm('⚠️ PERINGATAN HAPUS DATA:\nApakah Anda yakin ingin menghapus pesanan #{{ $pesanan->id }} milik {{ $pesanan->klien->name ?? 'klien' }}?\n\nData yang dihapus tidak dapat dipulihkan!')">
+                                              onsubmit="return confirm('Hapus data pesanan ini?')" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
@@ -140,7 +105,7 @@
                                         @if($pesanan->status === 'menunggu')
                                             <a href="{{ route('pesanan.edit', $pesanan) }}" class="btn btn-sm btn-primary">Edit</a>
                                             <form action="{{ route('pesanan.destroy', $pesanan) }}" method="POST"
-                                                  onsubmit="return confirm('⚠️ KONFIRMASI PEMBATALAN:\nApakah Anda yakin ingin membatalkan pesanan ini?')">
+                                                  onsubmit="return confirm('Batalkan pesanan ini?')" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger">Batal</button>

@@ -40,12 +40,9 @@
             <div class="form-group">
                 <label>Foto Paket</label>
                 <label class="form-file-label" for="foto" style="cursor: pointer;">
-                    <span>📎</span>
                     <span id="file-label-text">Pilih foto (JPEG/PNG, maks 2MB)</span>
-                    <!-- Ditambahkan id="foto" dan onchange untuk mendeteksi file -->
                     <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,image/jpg" style="display: none;" onchange="updateFileName(this)">
                 </label>
-                <!-- Tambahan area preview gambar opsional -->
                 <div style="margin-top: 10px;">
                     <img id="image-preview" src="#" alt="Preview" style="display: none; max-width: 200px; border-radius: 6px;" />
                 </div>

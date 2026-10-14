@@ -39,9 +39,6 @@
                     <div style="color: #64748b; font-weight: 500;">Status Pesanan:</div>
                     <div>
                         <span class="badge badge-{{ $pesanan->status }}">{{ ucfirst($pesanan->status) }}</span>
-                        @if($pesanan->status === 'selesai')
-                            <small style="color: #059669; font-weight: 600; margin-left: 8px;">(Sesi foto telah selesai dan terkunci)</small>
-                        @endif
                     </div>
                 </div>
 
@@ -76,13 +73,13 @@
                     </div>
                 </div>
 
-                {{-- Pesan / Catatan dari Fotografer --}}
+                {{-- Catatan dari Fotografer --}}
                 <div style="display: grid; grid-template-columns: 140px 1fr; gap: 12px; margin-top: 16px;">
                     <div style="color: #64748b; font-weight: 500;">Catatan Studio:</div>
                     <div>
                         @if($pesanan->catatan_fotografer)
                             <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; border-radius: 6px; padding: 12px 14px; font-size: 0.92rem; color: #166534;">
-                                <strong>📸 Pesan Fotografer:</strong>
+                                <strong>Catatan Fotografer:</strong>
                                 <p style="margin: 6px 0 0 0;">{{ $pesanan->catatan_fotografer }}</p>
                             </div>
                         @else

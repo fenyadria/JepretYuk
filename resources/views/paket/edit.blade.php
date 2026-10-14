@@ -47,7 +47,6 @@
                     </div>
                 @endif
                 <label class="form-file-label" for="foto" style="cursor: pointer; display: block; border: 2px dashed #ccc; padding: 15px; border-radius: 6px; text-align: center;">
-                    <span>📎</span>
                     <span id="file-label-text">Pilih foto baru (opsional)</span>
                     <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,image/jpg" style="display: none;" onchange="updateFileName(this)">
                 </label>

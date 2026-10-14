@@ -45,13 +45,13 @@
                 <div class="form-group">
                     <label for="lokasi">Lokasi</label>
                     <input type="text" name="lokasi" id="lokasi" class="form-control"
-                           value="{{ old('lokasi') }}" placeholder="Contoh: Taman Mini Indonesia Indah, Jakarta" required>
+                           value="{{ old('lokasi') }}" placeholder="Lokasi sesi foto" required>
                 </div>
 
                 <div class="form-group">
                     <label for="catatan_klien">Catatan Tambahan (Opsional)</label>
                     <textarea name="catatan_klien" id="catatan_klien" class="form-control" rows="3"
-                              placeholder="Contoh: Konsep pakaian vintage, mohon bawa properti balon">{{ old('catatan_klien') }}</textarea>
+                              placeholder="Catatan atau permintaan khusus">{{ old('catatan_klien') }}</textarea>
                 </div>
 
                 <div class="form-group">
