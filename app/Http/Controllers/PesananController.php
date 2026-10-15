@@ -316,4 +316,83 @@ class PesananController extends Controller
         $redirectRoute = ($user->role === 'fotografer') ? 'fotografer.pesanan.index' : 'pesanan.index';
         return redirect()->route($redirectRoute)->with('success', 'Pesanan #' . $pesanan->id . ' berhasil dihapus.');
     }
+
+    /**
+     * Menyimpan ulasan dan rating dari Klien untuk pesanan yang sudah selesai.
+     */
+    public function storeReview(Request $request, $pesananId)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'nullable|string|max:1000',
+        ]);
+
+        $pesanan = Pesanan::findOrFail($pesananId);
+
+        // Pastikan user yang login adalah klien pemilik pesanan dan statusnya sudah 'selesai'
+        if ($pesanan->klien_id !== Auth::id() || $pesanan->status !== 'selesai') {
+            return back()->with('error', 'Anda tidak dapat memberikan ulasan untuk pesanan ini.');
+        }
+
+        // Cek apakah ulasan untuk pesanan ini sudah pernah dibuat sebelumnya
+        if (\App\Models\Review::where('pesanan_id', $pesanan->id)->exists()) {
+            return back()->with('error', 'Anda sudah memberikan ulasan untuk pesanan ini.');
+        }
+
+        \App\Models\Review::create([
+            'pesanan_id'      => $pesanan->id,
+            'user_id'         => Auth::id(),
+            'photographer_id' => $pesanan->photographer_id ?? 1, // Sesuaikan jika ada kolom id fotografer, atau default ke ID admin/fotografer utama
+            'rating'          => $request->rating,
+            'review'          => $request->review,
+        ]);
+
+        return back()->with('success', 'Terima kasih! Ulasan Anda berhasil dikirim.');
+    }
+
+    /**
+     * Menampilkan daftar ulasan dan rata-rata rating di sisi Fotografer.
+     */
+    public function photographerReviews()
+    {
+        $reviews = \App\Models\Review::with(['user', 'pesanan'])
+                        ->latest()
+                        ->paginate(10);
+
+        $averageRating = \App\Models\Review::avg('rating');
+
+        return view('fotografer\admin.reviews.index', compact('reviews', 'averageRating'));
+    }
+
+    /**
+     * Memperbarui ulasan dan rating yang sudah pernah dikirim oleh Klien.
+     */
+    public function updateReview(Request $request, $pesananId)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'nullable|string|max:1000',
+        ]);
+
+        $pesanan = Pesanan::findOrFail($pesananId);
+
+        // Pastikan pesanan milik klien yang login dan statusnya 'selesai'
+        if ($pesanan->klien_id !== Auth::id() || $pesanan->status !== 'selesai') {
+            return back()->with('error', 'Akses ditolak.');
+        }
+
+        $review = \App\Models\Review::where('pesanan_id', $pesanan->id)->first();
+
+        if (!$review) {
+            return back()->with('error', 'Ulasan tidak ditemukan.');
+        }
+
+        // Update data ulasan
+        $review->update([
+            'rating' => $request->rating,
+            'review' => $request->review,
+        ]);
+
+        return back()->with('success', 'Ulasan Anda berhasil diperbarui!');
+    }
 }

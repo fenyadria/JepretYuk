@@ -43,6 +43,8 @@ Route::middleware(['auth', 'role.fotografer'])->prefix('fotografer')->group(func
     Route::put('/pesanan/{pesanan}', [PesananController::class, 'update'])->name('fotografer.pesanan.update');
     Route::delete('/pesanan/{pesanan}', [PesananController::class, 'destroy'])->name('fotografer.pesanan.destroy');
 
+    Route::get('/reviews', [PesananController::class, 'photographerReviews'])->name('fotografer.reviews');
+
     // Kelola Tim Fotografer / Admin
     Route::get('/admin-team', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('fotografer.admin.index');
     Route::get('/admin-team/create', [\App\Http\Controllers\AdminUserController::class, 'create'])->name('fotografer.admin.create');
@@ -64,4 +66,7 @@ Route::middleware(['auth', 'role.klien'])->prefix('klien')->group(function () {
     Route::put('/pesanan/{pesanan}', [PesananController::class, 'update'])->name('pesanan.update');
     Route::delete('/pesanan/{pesanan}', [PesananController::class, 'destroy'])->name('pesanan.destroy');
     Route::post('/pesanan/{pesanan}/upload-bukti', [PesananController::class, 'uploadBukti'])->name('pesanan.uploadBukti');
+
+    Route::post('/pesanan/{pesanan}/review', [PesananController::class, 'storeReview'])->name('user.reviews.store');
+    Route::put('/pesanan/{pesanan}/review', [PesananController::class, 'updateReview'])->name('user.reviews.update');
 });

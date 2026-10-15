@@ -54,6 +54,20 @@
                               placeholder="Catatan atau permintaan khusus">{{ old('catatan_klien') }}</textarea>
                 </div>
 
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; color: #1e293b;">
+                        💳 Informasi Rekening Pembayaran
+                    </h4>
+                    <p style="font-size: 0.85rem; color: #475569; margin: 0 0 8px 0;">
+                        Silakan lakukan transfer ke salah satu rekening berikut jika ingin langsung melampirkan bukti pembayaran/DP:
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                        <li><strong>BCA:</strong> 1234-5678-90 (a.n. Studio JepretYuk)</li>
+                        <li><strong>Mandiri:</strong> 0987-6543-21 (a.n. Studio JepretYuk)</li>
+                        <li><strong>E-Wallet (Dana/OVO):</strong> 0812-3456-7890 (a.n. JepretYuk)</li>
+                    </ul>
+                </div>
+
                 <div class="form-group">
                     <label for="bukti_pembayaran">Bukti Pembayaran / DP (Opsional)</label>
                     <input type="file" name="bukti_pembayaran" id="bukti_pembayaran" class="form-control" accept="image/*">

@@ -26,6 +26,7 @@
                         <a href="{{ route('paket.index') }}">Kelola Paket</a>
                         <a href="{{ route('fotografer.pesanan.index') }}">Daftar Pesanan</a>
                         <a href="{{ route('fotografer.admin.index') }}">Kelola Admin</a>
+                        <a href="{{ route('fotografer.reviews') }}" style="color: #d4a853; font-weight: 600;">Ulasan Klien</a>
                     @else
                         <a href="{{ route('klien.paket.index') }}">Pilihan Paket</a>
                         <a href="{{ route('pesanan.index') }}">Pesanan Saya</a>

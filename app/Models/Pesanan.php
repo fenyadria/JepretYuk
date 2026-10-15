@@ -43,4 +43,9 @@ class Pesanan extends Model
     {
         return $this->belongsTo(PaketFoto::class, 'paket_id');
     }
+
+    public function review()
+    {
+        return $this->hasOne(Review::class, 'pesanan_id');
+    }
 }
