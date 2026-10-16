@@ -87,7 +87,8 @@ class PaketFotoController extends Controller
 
     /**
      * Memperbarui data paket foto di database.
-     * Jika ada foto baru, hapus foto lama dan simpan yang baru.
+     * - Jika kotak "Hapus foto" dicentang (dan tidak ada foto baru), foto dihapus.
+     * - Jika ada foto baru, hapus foto lama dan simpan yang baru.
      */
     public function update(Request $request, PaketFoto $paket)
     {
@@ -99,6 +100,14 @@ class PaketFotoController extends Controller
         ]);
 
         $data = $request->only(['nama_paket', 'deskripsi', 'harga']);
+
+        // Hapus foto jika dicentang dan tidak ada foto baru yang diupload
+        if ($request->boolean('hapus_foto') && !$request->hasFile('foto')) {
+            if ($paket->foto) {
+                Storage::disk('public')->delete($paket->foto);
+            }
+            $data['foto'] = null;
+        }
 
         // Upload foto baru jika ada, hapus foto lama
         if ($request->hasFile('foto')) {

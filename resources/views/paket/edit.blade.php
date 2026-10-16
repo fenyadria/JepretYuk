@@ -44,6 +44,10 @@
                     <div class="current-foto">
                         <img src="{{ asset('storage/' . $paket->foto) }}" alt="{{ $paket->nama_paket }}">
                         <p class="form-hint">Foto saat ini. Upload foto baru untuk mengganti.</p>
+                        <label style="display:flex; gap:8px; align-items:center; margin-top:8px; font-weight:500;">
+       <input type="checkbox" name="hapus_foto" value="1">
+       Hapus foto ini (kembali ke placeholder)
+   </label>
                     </div>
                 @endif
                 <label class="form-file-label" for="foto" style="cursor: pointer; display: block; border: 2px dashed #ccc; padding: 15px; border-radius: 6px; text-align: center;">
