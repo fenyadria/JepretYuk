@@ -12,6 +12,10 @@
     <div class="card" style="margin-bottom: 28px; padding: 16px;">
         <form method="GET" action="{{ auth()->check() && auth()->user()->role === 'klien' ? route('klien.paket.index') : route('paket.katalog') }}" style="display: flex; gap: 12px; max-width: 600px; margin: 0 auto;">
             <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari nama paket...">
+             <select name="urut" class="form-control" style="max-width: 190px;" onchange="this.form.submit()">
+       <option value="termurah" {{ request('urut') === 'termurah' ? 'selected' : '' }}>Harga Termurah</option>
+       <option value="termahal" {{ request('urut') === 'termahal' ? 'selected' : '' }}>Harga Termahal</option>
+   </select>
             <button type="submit" class="btn btn-primary">Cari</button>
             @if(request('q'))
                 <a href="{{ auth()->check() && auth()->user()->role === 'klien' ? route('klien.paket.index') : route('paket.katalog') }}" class="btn btn-outline-dark">Reset</a>

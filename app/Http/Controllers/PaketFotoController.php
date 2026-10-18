@@ -39,7 +39,16 @@ class PaketFotoController extends Controller
                   ->orWhere('deskripsi', 'like', "%{$keyword}%");
         }
 
-        $pakets = $query->latest()->get();
+        // Urutkan paket sesuai pilihan: termurah, termahal, atau terbaru (default)
+        if ($request->urut === 'termurah') {
+            $query->orderBy('harga', 'asc');
+        } elseif ($request->urut === 'termahal') {
+            $query->orderBy('harga', 'desc');
+        } else {
+            $query->latest();
+        }
+
+        $pakets = $query->get();
 
         return view('paket.katalog', compact('pakets'));
     }
