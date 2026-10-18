@@ -16,6 +16,7 @@ class DashboardController extends Controller
      * - Estimasi omset/pendapatan dari pesanan yang disetujui / selesai
      * - Pesanan terbaru yang memerlukan konfirmasi
      * - Jadwal sesi foto terdekat
+     * - Paket foto terlaris (paling banyak dipesan)
      */
     public function fotografer()
     {
@@ -48,6 +49,12 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // 3 paket yang paling banyak dipesan
+        $paketTerlaris = PaketFoto::withCount('pesanans')
+            ->orderByDesc('pesanans_count')
+            ->take(3)
+            ->get();
+
         return view('dashboard.fotografer', compact(
             'totalPesanan',
             'pesananMenunggu',
@@ -58,7 +65,8 @@ class DashboardController extends Controller
             'totalKlien',
             'totalPaket',
             'pesananTerbaru',
-            'jadwalTerdekat'
+            'jadwalTerdekat',
+            'paketTerlaris'
         ));
     }
 

@@ -71,5 +71,53 @@
             </div>
         @endif
     </div>
+
+    {{-- Jadwal Sesi Foto Terdekat --}}
+    <div class="card" style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 16px;">📅 Jadwal Sesi Foto Terdekat</h2>
+
+        @if($jadwalTerdekat->isEmpty())
+            <div class="table-empty">Belum ada jadwal sesi foto yang disetujui.</div>
+        @else
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Klien</th>
+                            <th>Paket</th>
+                            <th>Lokasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($jadwalTerdekat as $jadwal)
+                            <tr>
+                                <td><strong>{{ \Carbon\Carbon::parse($jadwal->tanggal)->format('d M Y') }}</strong></td>
+                                <td>{{ $jadwal->klien->name ?? '-' }}</td>
+                                <td>{{ $jadwal->paketFoto->nama_paket ?? '-' }}</td>
+                                <td>{{ $jadwal->lokasi }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+
+    {{-- Paket Terlaris --}}
+    <div class="card" style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 16px;">🏆 Paket Terlaris</h2>
+
+        @if($paketTerlaris->isEmpty())
+            <div class="table-empty">Belum ada data paket.</div>
+        @else
+            @foreach($paketTerlaris as $paket)
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span><strong>{{ $loop->iteration }}.</strong> {{ $paket->nama_paket }}</span>
+                    <span style="color: #64748b;">{{ $paket->pesanans_count }} pesanan</span>
+                </div>
+            @endforeach
+        @endif
+    </div>
 </div>
 @endsection
