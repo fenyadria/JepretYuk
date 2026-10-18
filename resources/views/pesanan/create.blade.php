@@ -29,11 +29,20 @@
                     <select name="paket_id" id="paket_id" class="form-control" required>
                         <option value="">-- Pilih Paket --</option>
                         @foreach($pakets as $paket)
-                            <option value="{{ $paket->id }}" {{ old('paket_id', request('paket_id')) == $paket->id ? 'selected' : '' }}>
+                            <option value="{{ $paket->id }}" 
+                                    data-deskripsi="{{ e($paket->deskripsi) }}" 
+                                    data-harga="Rp {{ number_format($paket->harga, 0, ',', '.') }}"
+                                    {{ old('paket_id', request('paket_id')) == $paket->id ? 'selected' : '' }}>
                                 {{ $paket->nama_paket }} — Rp {{ number_format($paket->harga, 0, ',', '.') }}
                             </option>
                         @endforeach
                     </select>
+                </div>
+
+                <div id="box-detail-paket" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 6px 0; font-size: 0.95rem; color: #1e293b; font-weight: 600;">📌 Rincian Paket Pilihan:</h5>
+                    <div id="detail-harga" style="font-size: 1.15rem; font-weight: 800; color: #d4a853; margin-bottom: 8px;"></div>
+                    <p id="detail-deskripsi" style="margin: 0; font-size: 0.88rem; color: #475569; line-height: 1.5; white-space: pre-line;"></p>
                 </div>
 
                 <div class="form-group">
@@ -82,4 +91,35 @@
         @endif
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectPaket = document.getElementById('paket_id');
+        const boxDetail = document.getElementById('box-detail-paket');
+        const detailHarga = document.getElementById('detail-harga');
+        const detailDeskripsi = document.getElementById('detail-deskripsi');
+
+        function updatePaketDetail() {
+            if (!selectPaket) return;
+            
+            const selectedOption = selectPaket.options[selectPaket.selectedIndex];
+            
+            if (selectedOption && selectedOption.value) {
+                const deskripsi = selectedOption.getAttribute('data-deskripsi');
+                const harga = selectedOption.getAttribute('data-harga');
+
+                detailHarga.textContent = harga;
+                detailDeskripsi.textContent = deskripsi ? deskripsi : 'Tidak ada rincian deskripsi.';
+                boxDetail.style.display = 'block';
+            } else {
+                boxDetail.style.display = 'none';
+            }
+        }
+
+        selectPaket.addEventListener('change', updatePaketDetail);
+        
+        // Jalankan saat pertama kali dimuat (jika paket sudah terpilih dari query URL / old input)
+        updatePaketDetail();
+    });
+</script>
 @endsection
