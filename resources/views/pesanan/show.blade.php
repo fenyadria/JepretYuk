@@ -97,7 +97,7 @@
 
                 @if($pesanan->bukti_pembayaran)
                     <div style="margin-bottom: 16px;">
-                        <img src="{{ asset('storage/' . $pesanan->bukti_pembayaran) }}" alt="Bukti Pembayaran" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #e2e8f0; object-fit: contain;">
+                        <img src="{{ asset('storage/' . $pesanan->bukti_pembayaran) }}" alt="Bukti Pembayaran" style="width: 100%; max-width: 220px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
                     </div>
                     <a href="{{ asset('storage/' . $pesanan->bukti_pembayaran) }}" target="_blank" class="btn btn-sm btn-outline-dark">
                         Buka Gambar Ukuran Asli
