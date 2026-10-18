@@ -31,6 +31,26 @@
         </div>
     </div>
 
+    {{-- Ringkasan Tambahan (kartu bisa diklik) --}}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <a href="{{ route('fotografer.pesanan.index', ['status' => 'selesai']) }}" class="card" style="text-align: center; padding: 20px; text-decoration: none;">
+            <div style="font-size: 28px; font-weight: 800; color: #059669;">{{ $pesananSelesai }}</div>
+            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Pesanan Selesai</div>
+        </a>
+        <a href="{{ route('fotografer.pesanan.index', ['status' => 'ditolak']) }}" class="card" style="text-align: center; padding: 20px; text-decoration: none;">
+            <div style="font-size: 28px; font-weight: 800; color: #dc2626;">{{ $pesananDitolak }}</div>
+            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Pesanan Ditolak</div>
+        </a>
+        <div class="card" style="text-align: center; padding: 20px;">
+            <div style="font-size: 28px; font-weight: 800; color: #7c3aed;">{{ $totalKlien }}</div>
+            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Total Klien</div>
+        </div>
+        <a href="{{ route('paket.index') }}" class="card" style="text-align: center; padding: 20px; text-decoration: none;">
+            <div style="font-size: 28px; font-weight: 800; color: #0891b2;">{{ $totalPaket }}</div>
+            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Total Paket Foto</div>
+        </a>
+    </div>
+
     {{-- Pesanan Baru yang Butuh Konfirmasi --}}
     <div class="card" style="margin-bottom: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
