@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaketFotoController;
 use App\Http\Controllers\PesananController;
+use App\Http\Controllers\ProfileController;
 
 
 Route::get('/', function () {
@@ -69,4 +70,7 @@ Route::middleware(['auth', 'role.klien'])->prefix('klien')->group(function () {
 
     Route::post('/pesanan/{pesanan}/review', [PesananController::class, 'storeReview'])->name('user.reviews.store');
     Route::put('/pesanan/{pesanan}/review', [PesananController::class, 'updateReview'])->name('user.reviews.update');
+
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 });

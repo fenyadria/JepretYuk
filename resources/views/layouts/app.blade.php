@@ -31,6 +31,7 @@
                         <a href="{{ route('klien.paket.index') }}">Pilihan Paket</a>
                         <a href="{{ route('pesanan.index') }}">Pesanan Saya</a>
                         <a href="{{ route('pesanan.create') }}">Buat Pesanan</a>
+                        <a href="{{ route('profile.edit') }}">Edit Profil</a>
                     @endif
                     <form action="{{ route('logout') }}" method="POST" style="display:inline">
                         @csrf
